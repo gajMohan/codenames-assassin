@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assassin Game</title>
+    <script src="https://cdn.pubnub.com/sdk/javascript/pubnub.7.2.2.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-900 text-white text-center p-6">
+    <div>
+        <button id="help-button" class="absolute rounded right-4 text-xl border p-2">How to play?</button>
+        <div id="help-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-10">
+            <div class="bg-white text-black p-10 rounded-lg min-w-96 max-w-4xl text-left overflow-scroll max-h-full">
+                <h2 class="text-2xl font-bold mb-4 text-center">How to Play</h2>
+                <ul class="list-decimal">
+                    <li class="mb-4">
+                        <b>Set Up:</b> Arrange the board as shown below:
+                        <img class="mt-4 w-96" src="assets/setup.png" />
+                    </li>
+                    <li class="mb-4">
+                        <b>Join or Create a Room:</b> Players can either join an existing room or create a new one. The
+                        round will start once at least 3 players are present.
+                    </li>
+                    <li class="mb-4">
+                        <b>Round Start:</b> When the round begins, one player will be randomly selected as the Assassin.
+                    </li>
+                    <li class="mb-4">
+                        <b>Role Indicators:</b>All non-Assassin players will see a word that is the round’s secret word,
+                        as
+                        shown below: <img class="mt-4 w-96" src="assets/chosen.png" />
+                    </li>
+                    <li class="mb-4">
+                        <b>First Player:</b> The first player to start the round is either the Assassin from the
+                        previous
+                        round or the player who most recently watched a spy movie.
+                    </li>
+                    <li class="mb-4">
+                        <b>Guessing the Word:</b> The first player will say one word that hints at the round’s secret
+                        word.
+                        The Assassin will also say a word to blend in without revealing the secret word. The word cannot
+                        be:
+                        <ul class="list-disc ml-4">
+                            <li class="mb-4">The secret word itself.</li>
+                            <li class="mb-4">A word that has already been said.</li>
+                            <li class="mb-4">More than one word.</li>
+                        </ul>
+                    </li>
+                    <li class="mb-4"><b>Next Turn:</b> Moving clockwise, each player will say one word in turn.</li>
+                    <li class="mb-4"><b>Debate Time:</b> After everyone has spoken, the players will begin debating who
+                        they believe the
+                        Assassin is. This is your chance to play detective and challenge each other’s arguments. </li>
+                    <li class="mb-4">
+                        <b>Vote:</b> After a few minutes of debating, each player votes by pointing to the person they
+                        think
+                        is the Assassin.
+                    </li>
+                    <li class="mb-4">
+                        <b>Reveal:</b> The player with the most votes must reveal their phone screen. If the Assassin is
+                        correctly identified, they are captured. However, if the Assassin manages to escape, the game
+                        continues. The Assassin will then have one final chance to guess the secret word. If they guess
+                        correctly, they escape.
+                    </li>
+                    <li class="mb-4"><b>Tiebreaker:</b> In the event of a tie vote, the first player has the deciding
+                        vote.</li>
+                </ul>
+                <button id="close-help" class="mt-4 px-4 py-2 bg-red-500 rounded">Close</button>
+            </div>
+        </div>
+    </div>
+    <br/>
+    <h1 class="text-4xl font-bold mb-6">Assassin Game</h1>
+
+    <div class="flex justify-center">
+    <div id="setup-container" class="space-y-4 flex flex-col justify-center">
+        <div class="w-96 flex flex-col">
+        <input type="text" id="player-name" placeholder="Enter Your Name"
+            class="px-4 py-2 bg-gray-800 text-white">
+        <button onclick="createRoom()" class="px-6 py-2 bg-blue-500 rounded hover:bg-blue-600">Create Room</button>
+    </div>
+    or
+    <div class="w-96 flex flex-col">
+        <input type="text" id="join-room" placeholder="Enter Room Name"
+            class="px-4 py-2  bg-gray-800 text-white">
+        <input type="text" id="join-player-name" placeholder="Enter Your Name"
+            class="px-4 py-2  bg-gray-800 text-white">
+        <button onclick="joinRoom()" class="px-6 py-2 bg-green-500 rounded hover:bg-green-600">Join Room</button>
+    </div>
+    </div>
+</div>
+
+    <div id="game-container" class="hidden mt-6 space-y-4">
+        <h2 id="room-display" class="text-2xl font-semibold"></h2>
+        <p id="player-name-display" class="text-lg"></p>
+        <h3 class="text-xl">Players in Room (<span id="player-count">0</span>/8):</h3>
+        <ul id="players-list" class="list-none space-y-2"></ul>
+        <p id="waiting-message" class="text-yellow-400">Waiting for more players... (3 needed to start)</p>
+        <button id="start-round" onclick="startRound()"
+            class="hidden px-6 py-2 bg-red-500 rounded hover:bg-red-600">Start Round</button>
+        <div id="grid-container" class="hidden grid grid-cols-7 gap-x-8 gap-y-1 mx-auto w-80 h-40"></div>
+    </div>
+
+    <script src="keys.js"></script>
+    <script src="defaultNames.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
