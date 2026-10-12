@@ -5,102 +5,298 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Assassin Game</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.pubnub.com/sdk/javascript/pubnub.7.2.2.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        display: ['Outfit', 'sans-serif'],
+                        sans: ['Work Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: 'var(--color-primary)',
+                        'on-primary': 'var(--color-on-primary)',
+                        accent: 'var(--color-accent)',
+                        'on-accent': 'var(--color-on-accent)',
+                        background: 'var(--color-background)',
+                        foreground: 'var(--color-foreground)',
+                        card: 'var(--color-card)',
+                        muted: 'var(--color-muted)',
+                        'muted-foreground': 'var(--color-muted-foreground)',
+                        border: 'var(--color-border)',
+                        destructive: 'var(--color-destructive)',
+                        word: 'var(--color-word)',
+                        secret: 'var(--color-secret)',
+                    },
+                },
+            },
+        };
+    </script>
+    <style>
+        :root {
+            --color-primary: #15803D;
+            --color-on-primary: #FFFFFF;
+            --color-accent: #D97706;
+            --color-on-accent: #000000;
+            --color-background: #0F172A;
+            --color-foreground: #FFFFFF;
+            --color-card: #192134;
+            --color-muted: #0F1F2B;
+            --color-muted-foreground: #94A3B8;
+            --color-border: rgba(255, 255, 255, 0.08);
+            --color-destructive: #DC2626;
+            --color-word: #F5F5DC;
+            --color-secret: #22C55E;
+        }
+
+        body {
+            background:
+                radial-gradient(ellipse at top, rgba(21, 128, 61, 0.18), transparent 60%),
+                var(--color-background);
+        }
+
+        .fade-in {
+            animation: fade-in 300ms ease-out both;
+        }
+
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: none; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation: none !important;
+                transition: none !important;
+            }
+        }
+    </style>
 </head>
 
-<body class="bg-gray-900 text-white text-center p-6">
-    <div>
-        <button id="help-button" class="absolute rounded right-4 text-xl border p-2">How to play?</button>
-        <div id="help-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-10">
-            <div class="bg-white text-black p-10 rounded-lg min-w-96 max-w-4xl text-left overflow-scroll max-h-full">
-                <h2 class="text-2xl font-bold mb-4 text-center">How to Play</h2>
-                <ul class="list-decimal">
-                    <li class="mb-4">
-                        <b>Set Up:</b> Arrange the board as shown below:
-                        <img class="mt-4 w-96" src="assets/setup.png" />
-                    </li>
-                    <li class="mb-4">
-                        <b>Join or Create a Room:</b> Players can either join an existing room or create a new one. The
-                        round will start once at least 3 players are present.
-                    </li>
-                    <li class="mb-4">
-                        <b>Round Start:</b> When the round begins, one player will be randomly selected as the Assassin.
-                    </li>
-                    <li class="mb-4">
-                        <b>Role Indicators:</b>All non-Assassin players will see a word that is the round’s secret word,
-                        as
-                        shown below: <img class="mt-4 w-96" src="assets/chosen.png" />
-                    </li>
-                    <li class="mb-4">
-                        <b>First Player:</b> The first player to start the round is either the Assassin from the
-                        previous
-                        round or the player who most recently watched a spy movie.
-                    </li>
-                    <li class="mb-4">
-                        <b>Guessing the Word:</b> The first player will say one word that hints at the round’s secret
-                        word.
-                        The Assassin will also say a word to blend in without revealing the secret word. The word cannot
-                        be:
-                        <ul class="list-disc ml-4">
-                            <li class="mb-4">The secret word itself.</li>
-                            <li class="mb-4">A word that has already been said.</li>
-                            <li class="mb-4">More than one word.</li>
-                        </ul>
-                    </li>
-                    <li class="mb-4"><b>Next Turn:</b> Moving clockwise, each player will say one word in turn.</li>
-                    <li class="mb-4"><b>Debate Time:</b> After everyone has spoken, the players will begin debating who
-                        they believe the
-                        Assassin is. This is your chance to play detective and challenge each other’s arguments. </li>
-                    <li class="mb-4">
-                        <b>Vote:</b> After a few minutes of debating, each player votes by pointing to the person they
-                        think
-                        is the Assassin.
-                    </li>
-                    <li class="mb-4">
-                        <b>Reveal:</b> The player with the most votes must reveal their phone screen. If the Assassin is
-                        correctly identified, they are captured. However, if the Assassin manages to escape, the game
-                        continues. The Assassin will then have one final chance to guess the secret word. If they guess
-                        correctly, they escape.
-                    </li>
-                    <li class="mb-4"><b>Tiebreaker:</b> In the event of a tie vote, the first player has the deciding
-                        vote.</li>
-                </ul>
-                <button id="close-help" class="mt-4 px-4 py-2 bg-red-500 rounded">Close</button>
+<body class="min-h-screen bg-background text-foreground font-sans antialiased">
+    <header class="mx-auto flex max-w-5xl items-center justify-between px-4 py-5 sm:px-6">
+        <div class="flex items-center gap-3">
+            <svg class="h-8 w-8 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="9" />
+                <circle cx="12" cy="12" r="3" />
+                <path d="M12 1v4M12 19v4M1 12h4M19 12h4" />
+            </svg>
+            <span class="font-display text-xl font-bold tracking-tight">Assassin</span>
+        </div>
+        <button id="help-button" type="button"
+            class="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-border bg-card px-4 text-sm font-medium transition-colors duration-200 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01" />
+            </svg>
+            How to play
+        </button>
+    </header>
+
+    <div id="help-modal" role="dialog" aria-modal="true" aria-labelledby="help-title"
+        class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+        <div class="fade-in flex max-h-full w-full max-w-xl flex-col overflow-hidden rounded-2xl border border-border bg-card text-left shadow-2xl">
+            <div class="flex items-center justify-between px-6 pb-2 pt-4">
+                <div>
+                    <h2 id="help-title" class="font-display text-lg font-semibold text-muted-foreground">How to play</h2>
+                    <p id="help-progress" class="text-xs text-slate-500" aria-live="polite">Step 1 of 4</p>
+                </div>
+                <button id="close-help" type="button" aria-label="Close"
+                    class="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg text-muted-foreground transition-colors duration-200 hover:bg-white/10 hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" aria-hidden="true">
+                        <path d="M18 6 6 18M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <div class="overflow-y-auto px-6 pb-2">
+                <section data-step class="fade-in">
+                    <div class="rounded-xl bg-gradient-to-b from-green-900 to-green-950 p-3 shadow-inner sm:p-4">
+                        <div id="help-table" class="grid grid-cols-7 gap-1" aria-hidden="true"></div>
+                    </div>
+                    <h3 class="mt-5 font-display text-2xl font-bold">Set up the table</h3>
+                    <p class="mt-2 leading-relaxed text-slate-300">Lay out 25 Codenames word cards in a 5×5 grid. Put red agent cards in the top corners and blue ones in the bottom corners, so everyone can line their phone up with the table.</p>
+                    <p class="mt-2 leading-relaxed text-slate-300">One player creates a room and shares its name, and everyone else joins it. You need 3 to 8 players.</p>
+                </section>
+
+                <section data-step class="fade-in hidden">
+                    <div class="grid grid-cols-2 gap-4 rounded-xl bg-muted p-4">
+                        <figure class="flex flex-col items-center gap-2">
+                            <div class="w-full max-w-[11rem] rounded-[1.25rem] border-4 border-slate-600 bg-background p-2 shadow-xl">
+                                <p class="mb-1.5 rounded bg-green-500/15 py-0.5 text-center text-[0.6rem] font-semibold text-green-300">You are an agent</p>
+                                <div id="help-agent-phone" class="grid grid-cols-7 gap-0.5" aria-hidden="true"></div>
+                            </div>
+                            <figcaption class="text-center text-sm text-green-300">Agents see the secret card</figcaption>
+                        </figure>
+                        <figure class="flex flex-col items-center gap-2">
+                            <div class="w-full max-w-[11rem] rounded-[1.25rem] border-4 border-slate-600 bg-background p-2 shadow-xl">
+                                <p class="mb-1.5 rounded bg-red-500/15 py-0.5 text-center text-[0.6rem] font-semibold text-red-300">You are the Assassin</p>
+                                <div id="help-assassin-phone" class="grid grid-cols-7 gap-0.5" aria-hidden="true"></div>
+                            </div>
+                            <figcaption class="text-center text-sm text-red-300">The Assassin sees nothing</figcaption>
+                        </figure>
+                    </div>
+                    <h3 class="mt-5 font-display text-2xl font-bold">One of you is the Assassin</h3>
+                    <p class="mt-2 leading-relaxed text-slate-300">When the host starts a round, everyone checks their phone. Agents find the highlighted card on the table. In this example the secret word is <b class="text-foreground">SEAL</b>. The Assassin doesn't know it and has to bluff.</p>
+                </section>
+
+                <section data-step class="fade-in hidden">
+                    <ul class="flex flex-col gap-2 rounded-xl bg-muted p-4" aria-label="Example clues for SEAL">
+                        <li class="flex items-center gap-3"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-primary font-display text-sm font-semibold" aria-hidden="true">A</span><span class="rounded-2xl rounded-tl-sm bg-card px-3 py-1.5">"Ocean"</span></li>
+                        <li class="flex items-center gap-3"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-primary font-display text-sm font-semibold" aria-hidden="true">B</span><span class="rounded-2xl rounded-tl-sm bg-card px-3 py-1.5">"Stamp"</span></li>
+                        <li class="flex items-center gap-3"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-primary font-display text-sm font-semibold" aria-hidden="true">C</span><span class="rounded-2xl rounded-tl-sm bg-card px-3 py-1.5">"Animal"</span><span class="text-sm text-amber-300">A bit vague…</span></li>
+                        <li class="flex items-center gap-3"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-primary font-display text-sm font-semibold" aria-hidden="true">D</span><span class="rounded-2xl rounded-tl-sm bg-card px-3 py-1.5">"Navy"</span></li>
+                    </ul>
+                    <h3 class="mt-5 font-display text-2xl font-bold">Give a clue, then vote</h3>
+                    <p class="mt-2 leading-relaxed text-slate-300">Going clockwise, everyone says <b class="text-foreground">one word</b> linked to the secret word. Don't say the word itself or repeat a clue. Last round's Assassin goes first. In the first round, it's whoever most recently watched a spy movie.</p>
+                    <p class="mt-2 leading-relaxed text-slate-300">Then debate. On the count of three, everyone points at their suspect. If there's a tie, the tied players each give <b class="text-foreground">one more clue</b>, then everyone votes again between them. If it's still tied, the first player decides.</p>
+                </section>
+
+                <section data-step class="fade-in hidden">
+                    <ul class="flex flex-col gap-2">
+                        <li class="flex items-center gap-4 rounded-xl bg-muted p-4">
+                            <span class="w-16 shrink-0 rounded-lg bg-red-500/15 py-1 text-center font-display text-lg font-bold text-red-300">+2</span>
+                            <span><b class="text-foreground">Wrong player accused.</b> <span class="text-slate-300">The Assassin escapes and scores 2.</span></span>
+                        </li>
+                        <li class="flex items-center gap-4 rounded-xl bg-muted p-4">
+                            <span class="w-16 shrink-0 rounded-lg bg-red-500/15 py-1 text-center font-display text-lg font-bold text-red-300">+1</span>
+                            <span><b class="text-foreground">Caught, but guesses the word.</b> <span class="text-slate-300">The Assassin gets one guess. If it's right, they still escape and score 1.</span></span>
+                        </li>
+                        <li class="flex items-center gap-4 rounded-xl bg-muted p-4">
+                            <span class="w-16 shrink-0 rounded-lg bg-green-500/15 py-1 text-center font-display text-lg font-bold text-green-300">+1</span>
+                            <span><b class="text-foreground">Caught, wrong guess.</b> <span class="text-slate-300">Every agent scores 1.</span></span>
+                        </li>
+                    </ul>
+                    <h3 class="mt-5 font-display text-2xl font-bold">Reveal and score</h3>
+                    <p class="mt-2 leading-relaxed text-slate-300">The accused player shows their phone. The first player to <b class="text-foreground">5 points</b> wins. For the next round, <b class="text-foreground">flip all 25 cards</b> to use the words on the back. After both sides have been played, deal 25 new cards.</p>
+                </section>
+            </div>
+
+            <div class="flex items-center justify-between gap-3 border-t border-border px-6 py-4">
+                <button id="help-back" type="button"
+                    class="invisible min-h-11 cursor-pointer rounded-lg px-4 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:bg-white/10 hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-accent">Back</button>
+                <div class="flex items-center gap-1.5" aria-hidden="true">
+                    <span data-step-dot class="h-2 w-2 rounded-full bg-slate-600 transition-all duration-200"></span>
+                    <span data-step-dot class="h-2 w-2 rounded-full bg-slate-600 transition-all duration-200"></span>
+                    <span data-step-dot class="h-2 w-2 rounded-full bg-slate-600 transition-all duration-200"></span>
+                    <span data-step-dot class="h-2 w-2 rounded-full bg-slate-600 transition-all duration-200"></span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <button id="help-skip" type="button"
+                        class="min-h-11 cursor-pointer rounded-lg px-3 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:bg-white/10 hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-accent">Skip</button>
+                    <button id="help-next" type="button"
+                        class="min-h-11 min-w-24 cursor-pointer rounded-lg bg-accent px-5 font-display font-semibold text-on-accent transition-colors duration-200 hover:bg-amber-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-card">Next</button>
+                </div>
             </div>
         </div>
     </div>
-    <br/>
-    <h1 class="text-4xl font-bold mb-6">Assassin Game</h1>
 
-    <div class="flex justify-center">
-    <div id="setup-container" class="space-y-4 flex flex-col justify-center">
-        <div class="w-96 flex flex-col">
-        <input type="text" id="player-name" placeholder="Enter Your Name"
-            class="px-4 py-2 bg-gray-800 text-white">
-        <button onclick="createRoom()" class="px-6 py-2 bg-blue-500 rounded hover:bg-blue-600">Create Room</button>
-    </div>
-    or
-    <div class="w-96 flex flex-col">
-        <input type="text" id="join-room" placeholder="Enter Room Name"
-            class="px-4 py-2  bg-gray-800 text-white">
-        <input type="text" id="join-player-name" placeholder="Enter Your Name"
-            class="px-4 py-2  bg-gray-800 text-white">
-        <button onclick="joinRoom()" class="px-6 py-2 bg-green-500 rounded hover:bg-green-600">Join Room</button>
-    </div>
-    </div>
-</div>
+    <main class="mx-auto max-w-5xl px-4 pb-16 sm:px-6">
+        <div id="setup-container" class="fade-in">
+            <div class="mx-auto mb-10 mt-6 max-w-xl text-center">
+                <h1 class="font-display text-4xl font-bold tracking-tight sm:text-5xl">Find the Assassin</h1>
+                <p class="mt-3 text-lg text-muted-foreground">A social deduction game for 3 to 8 players, played on a Codenames board.</p>
+            </div>
 
-    <div id="game-container" class="hidden mt-6 space-y-4">
-        <h2 id="room-display" class="text-2xl font-semibold"></h2>
-        <p id="player-name-display" class="text-lg"></p>
-        <h3 class="text-xl">Players in Room (<span id="player-count">0</span>/8):</h3>
-        <ul id="players-list" class="list-none space-y-2"></ul>
-        <p id="waiting-message" class="text-yellow-400">Waiting for more players... (3 needed to start)</p>
-        <button id="start-round" onclick="startRound()"
-            class="hidden px-6 py-2 bg-red-500 rounded hover:bg-red-600">Start Round</button>
-        <div id="grid-container" class="hidden grid grid-cols-7 gap-x-8 gap-y-1 mx-auto w-80 h-40"></div>
-    </div>
+            <div class="mx-auto grid max-w-3xl items-stretch gap-6 md:grid-cols-[1fr_auto_1fr]">
+                <section class="flex flex-col gap-4 rounded-2xl border border-border bg-card p-6 text-left" aria-labelledby="create-title">
+                    <h2 id="create-title" class="font-display text-xl font-semibold">Create a room</h2>
+                    <div class="flex flex-col gap-2">
+                        <label for="player-name" class="text-sm font-medium text-slate-300">Your name</label>
+                        <input type="text" id="player-name" placeholder="Leave blank for a random name" autocomplete="nickname"
+                            class="h-11 w-full rounded-lg border border-border bg-muted px-3 text-foreground placeholder:text-slate-500 focus:border-accent focus:outline-none focus:ring-2 focus:ring-amber-500/50">
+                    </div>
+                    <button type="button" onclick="createRoom()"
+                        class="mt-auto min-h-11 cursor-pointer rounded-lg bg-accent px-6 font-display font-semibold text-on-accent transition-colors duration-200 hover:bg-amber-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-card">
+                        Create room
+                    </button>
+                </section>
+
+                <div class="flex items-center justify-center gap-3 text-sm uppercase tracking-widest text-muted-foreground md:flex-col" aria-hidden="true">
+                    <span class="h-px w-16 bg-border md:h-16 md:w-px"></span>
+                    or
+                    <span class="h-px w-16 bg-border md:h-16 md:w-px"></span>
+                </div>
+
+                <section class="flex flex-col gap-4 rounded-2xl border border-border bg-card p-6 text-left" aria-labelledby="join-title">
+                    <h2 id="join-title" class="font-display text-xl font-semibold">Join a room</h2>
+                    <div class="flex flex-col gap-2">
+                        <label for="join-room" class="text-sm font-medium text-slate-300">Room name</label>
+                        <input type="text" id="join-room" placeholder="e.g. paris-lamp-12345" autocomplete="off" autocapitalize="off" spellcheck="false"
+                            class="h-11 w-full rounded-lg border border-border bg-muted px-3 text-foreground placeholder:text-slate-500 focus:border-accent focus:outline-none focus:ring-2 focus:ring-amber-500/50">
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <label for="join-player-name" class="text-sm font-medium text-slate-300">Your name</label>
+                        <input type="text" id="join-player-name" placeholder="Leave blank for a random name" autocomplete="nickname"
+                            class="h-11 w-full rounded-lg border border-border bg-muted px-3 text-foreground placeholder:text-slate-500 focus:border-accent focus:outline-none focus:ring-2 focus:ring-amber-500/50">
+                    </div>
+                    <button type="button" onclick="joinRoom()"
+                        class="mt-auto min-h-11 cursor-pointer rounded-lg bg-primary px-6 font-display font-semibold text-on-primary transition-colors duration-200 hover:bg-green-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-card">
+                        Join room
+                    </button>
+                </section>
+            </div>
+        </div>
+
+        <div id="game-container" class="hidden fade-in mx-auto mt-4 grid max-w-4xl gap-6 lg:grid-cols-[18rem_1fr]">
+            <aside class="flex flex-col gap-5 rounded-2xl border border-border bg-card p-6 text-left">
+                <div>
+                    <p class="text-xs font-medium uppercase tracking-widest text-muted-foreground">Room</p>
+                    <div class="mt-1 flex items-center gap-2">
+                        <h2 id="room-display" class="min-w-0 flex-1 break-all font-display text-lg font-semibold"></h2>
+                        <button id="copy-room" type="button" onclick="copyRoomName()" aria-label="Copy room name"
+                            class="inline-flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-lg text-muted-foreground transition-colors duration-200 hover:bg-white/10 hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <rect x="9" y="9" width="13" height="13" rx="2" />
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                            </svg>
+                        </button>
+                    </div>
+                    <p id="copy-status" class="h-5 text-sm text-secret" aria-live="polite"></p>
+                    <p id="player-name-display" class="text-sm text-muted-foreground"></p>
+                </div>
+
+                <div>
+                    <h3 class="mb-3 flex items-center justify-between text-sm font-medium text-slate-300">
+                        Players
+                        <span class="rounded-full bg-muted px-2.5 py-0.5 font-display text-xs tabular-nums text-muted-foreground"><span id="player-count">0</span>/8</span>
+                    </h3>
+                    <ul id="players-list" class="flex flex-col gap-2" aria-live="polite"></ul>
+                </div>
+
+                <p id="waiting-message" class="flex items-center gap-2 text-sm text-amber-400">
+                    <span class="h-2 w-2 animate-pulse rounded-full bg-amber-400" aria-hidden="true"></span>
+                    <span id="waiting-text">Waiting for players (3 needed)</span>
+                </p>
+                <button id="start-round" type="button" onclick="startRound()"
+                    class="hidden min-h-11 cursor-pointer rounded-lg bg-accent px-6 font-display font-semibold text-on-accent transition-colors duration-200 hover:bg-amber-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-card">
+                    Start round
+                </button>
+                <button id="leave-room" type="button" onclick="leaveRoom()"
+                    class="mt-auto inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border px-6 text-sm font-medium text-red-300 transition-colors duration-200 hover:bg-red-500/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
+                    </svg>
+                    Leave room
+                </button>
+            </aside>
+
+            <section id="board" class="flex min-h-[20rem] flex-col items-center justify-center gap-5 rounded-2xl border border-border bg-card p-4 sm:p-6" aria-label="Board">
+                <p id="role-banner" class="text-center text-muted-foreground" aria-live="polite">The board appears here when a round starts.</p>
+                <div id="grid-container" class="hidden grid w-full max-w-lg grid-cols-7 gap-1.5 sm:gap-2"></div>
+            </section>
+        </div>
+    </main>
 
     <script src="keys.js"></script>
     <script src="defaultNames.js"></script>

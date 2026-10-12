@@ -8,36 +8,42 @@ Assassin is a fast-paced, browser-based social deduction game inspired by the po
 - **Randomized roles** to keep every game fresh
 - **Engaging word-based gameplay**
 - **Quick and easy setup**—just share a room name and start playing!
+- **Host controls**: only the room's creator starts rounds, and late joiners wait for the next round
 
 ## 🎮 How to Play
 
-1. **Set Up**: Arrange the board as shown:
-   ![Game Setup](assets/setup.png)
+Assassin plays like **The Chameleon**, using a Codenames board as the word grid. Everyone except the Assassin knows the secret word. Players give one-word clues, then vote on who they think is bluffing.
 
-2. **Join or Create a Room**: Players can join an existing room or create a new one. The round starts when at least **3 players** are present.
+### 1. Set up the table
+Lay out 25 Codenames word cards in a 5×5 grid. Put red agent cards in the top corners and blue ones in the bottom corners, so everyone can line their phone up with the table. One player creates a room and shares its name, and everyone else joins it. You need 3 to 8 players.
 
-3. **Round Start**: One player is randomly chosen as the **Assassin**.
+![A 5×5 grid of word cards with red agent cards in the top corners and blue in the bottom corners](assets/how-to-play-table.png)
 
-4. **Role Indicators**: Non-Assassin players see the **round’s secret word**:
-   ![Word Indicator](assets/chosen.png)
+### 2. One of you is the Assassin
+When the host (the player who created the room) starts a round, everyone checks their phone. Agents find the highlighted card on the table: that's the secret word. The Assassin doesn't know it and has to bluff.
 
-5. **First Player**: The first player is either:
-   - The Assassin from the previous round, OR
-   - The player who most recently watched a spy movie.
+![An agent's phone with one card highlighted next to the Assassin's phone showing no secret card](assets/how-to-play-phones.png)
 
-6. **Word Hinting**: Players take turns saying **one-word hints** about the secret word. The Assassin must blend in while avoiding detection.
-   - **Words cannot be:**
-     - The secret word itself
-     - A word already said
-     - More than one word
+### 3. Give a clue, then vote
+Going clockwise, everyone says **one word** linked to the secret word. Don't say the word itself or repeat a clue. Last round's Assassin goes first. In the first round, it's whoever most recently watched a spy movie.
 
-7. **Debate & Vote**: After all players have spoken, debate who the Assassin might be. Then, each player **votes** by pointing to their suspect.
+Then debate. On the count of three, everyone points at their suspect. If there's a tie, the tied players each give **one more clue**, then everyone votes again between them. If it's still tied, the first player decides.
 
-8. **Reveal**:
-   - The player with the most votes must **reveal their phone screen**.
-   - If the Assassin was caught, they have **one last chance** to guess the secret word and escape.
+### 4. Reveal and score
+The accused player shows their phone.
 
-9. **Tiebreaker**: If there’s a tie, the first player makes the final decision.
+| Outcome | Points |
+|---|---|
+| Wrong player accused | Assassin +2 |
+| Assassin caught, but guesses the secret word | Assassin +1 |
+| Assassin caught and guesses wrong | Every agent +1 |
+
+The first player to **5 points** wins. For the next round, **flip all 25 cards** to use the words on the back. After both sides have been played, deal 25 new cards.
+
+### Good to know
+- Refreshing the page puts you straight back into your room and round.
+- Players who join mid-round wait and are dealt in next round.
+- If the host leaves, another player becomes host. The host can also remove players who closed their tab.
 
 ## 🛠️ Tech Stack
 - **PubNub** – Real-time communication
@@ -54,12 +60,20 @@ Assassin is a fast-paced, browser-based social deduction game inspired by the po
    cd codenames-assassin
    ```
 3. Sign up for a **PubNub** account at [PubNub](https://www.pubnub.com/) to obtain your **publish** and **subscribe** keys.
-4. Copy `key.example.js` to `key.js`:
+4. Copy `keys.example.js` to `keys.js`:
    ```sh
-   cp key.example.js key.js
+   cp keys.example.js keys.js
    ```
-5. Open `key.js` and replace `your-publish-key` and `your-subscribe-key` with your actual PubNub keys.
+5. Open `keys.js` and replace `your-publish-key` and `your-subscribe-key` with your actual PubNub keys.
 6. Open `index.html` in a browser to play locally.
+
+## 🌐 Deploying to GitHub Pages
+Pushing to `main` deploys the site with the workflow in `.github/workflows/pages.yml`. It builds `keys.js` from two repository secrets, so the keys never go into git:
+```sh
+gh secret set PUBNUB_PUBLISH_KEY
+gh secret set PUBNUB_SUBSCRIBE_KEY
+```
+Then set **Settings → Pages → Source** to **GitHub Actions**. Keys used in a browser game are always readable in the page source, so use a PubNub keyset dedicated to this game.
 
 ## 📌 Future Enhancements
 - So many things
