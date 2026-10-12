@@ -1,0 +1,45 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v5
+
+      # keys.js is gitignored, so build it from repository secrets
+      - name: Write PubNub keys
+        env:
+          PUBNUB_PUBLISH_KEY: ${{ secrets.PUBNUB_PUBLISH_KEY }}
+          PUBNUB_SUBSCRIBE_KEY: ${{ secrets.PUBNUB_SUBSCRIBE_KEY }}
+        run: |
+          if [ -z "$PUBNUB_PUBLISH_KEY" ] || [ -z "$PUBNUB_SUBSCRIBE_KEY" ]; then
+            echo "::error::Set the PUBNUB_PUBLISH_KEY and PUBNUB_SUBSCRIBE_KEY repository secrets"
+            exit 1
+          fi
+          printf 'let pubnubPublishKey = "%s";\nlet pubnubsubscribeKey = "%s";\n' "$PUBNUB_PUBLISH_KEY" "$PUBNUB_SUBSCRIBE_KEY" > keys.js
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: .
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
